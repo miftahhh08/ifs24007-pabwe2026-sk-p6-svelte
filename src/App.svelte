@@ -6,6 +6,7 @@
 
   // Penjaga rute: ke mana pengguna harus dialihkan (null = boleh masuk)
   const redirectTo = $derived.by(() => {
+    if (route.redirect) return route.redirect;
     if (route.access === "auth" && !$isAuthenticated) return "/auth/login";
     if (route.access === "guest" && $isAuthenticated) return "/";
     return null;
