@@ -179,7 +179,7 @@
               <span class="rounded-full px-2.5 py-1 text-xs font-semibold {TYPE_STYLES[linkTree.type]}">
                 {TYPE_LABELS[linkTree.type]}
               </span>
-              <h3 class="mt-2 truncate font-bold text-slate-900">{linkTree.title}</h3>
+              <h2 class="mt-2 truncate font-bold text-slate-900">{linkTree.title}</h2>
               {#if linkTree.description}
                 <p class="mt-1 line-clamp-2 text-sm text-slate-500">{linkTree.description}</p>
               {/if}

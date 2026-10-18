@@ -83,6 +83,6 @@
       e.preventDefault();
       navigate("/auth/register");
     }}
-    class="font-semibold text-indigo-600 hover:underline">Daftar</a
+    class="font-semibold text-indigo-600 underline">Daftar</a
   >
 </p>

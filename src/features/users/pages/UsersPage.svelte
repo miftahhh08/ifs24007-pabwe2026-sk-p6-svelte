@@ -67,7 +67,7 @@
           <div class="min-w-0">
             <p class="font-semibold text-slate-900 truncate">{user.name}</p>
             <p class="text-sm text-slate-500 truncate">{user.email}</p>
-            <p class="text-xs text-slate-400 mt-0.5">
+            <p class="text-xs text-slate-500 mt-0.5">
               Bergabung {formatDate(user.created_at)}
             </p>
           </div>

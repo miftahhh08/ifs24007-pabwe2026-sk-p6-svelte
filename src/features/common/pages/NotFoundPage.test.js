@@ -10,6 +10,7 @@ describe("NotFoundPage", () => {
     renderWithProviders(NotFoundPage, { path: "/entah" });
     expect(screen.getByText("404")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Halaman tidak ditemukan" })).toBeInTheDocument();
+    expect(screen.getByRole("main")).toBeInTheDocument();
   });
 
   it("tautan kembali membawa ke beranda", async () => {

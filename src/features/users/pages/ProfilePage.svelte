@@ -142,7 +142,7 @@
             class="sr-only"
             onchange={handlePhotoChange}
           />
-          <p class="text-xs text-slate-400 mt-2">JPG atau PNG.</p>
+          <p class="text-xs text-slate-500 mt-2">JPG atau PNG.</p>
         </div>
       </div>
 

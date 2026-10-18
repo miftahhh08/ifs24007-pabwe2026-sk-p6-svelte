@@ -99,6 +99,6 @@
       e.preventDefault();
       navigate("/auth/login");
     }}
-    class="font-semibold text-indigo-600 hover:underline">Masuk</a
+    class="font-semibold text-indigo-600 underline">Masuk</a
   >
 </p>

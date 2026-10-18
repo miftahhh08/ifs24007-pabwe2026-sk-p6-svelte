@@ -75,6 +75,11 @@ describe("HomePage", () => {
     expect(await screen.findByText("Tipe Baru")).toBeInTheDocument();
   });
 
+  it("judul kartu memakai heading level 2 (urutan heading valid)", async () => {
+    await renderHome();
+    expect(screen.getByRole("heading", { level: 2, name: "Portofolio" })).toBeInTheDocument();
+  });
+
   it("menampilkan kartu statistik", async () => {
     await renderHome();
     const cards = screen.getAllByTestId("stat-card");

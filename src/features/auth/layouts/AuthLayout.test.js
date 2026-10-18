@@ -15,5 +15,7 @@ describe("AuthLayout", () => {
     expect(screen.getByText(/Kumpulkan semua tautan/)).toBeInTheDocument();
     expect(screen.getByText("isi halaman")).toBeInTheDocument();
     expect(screen.getByTestId("icon-Link2")).toBeInTheDocument();
+    // Aksesibilitas: seluruh konten berada di dalam landmark utama
+    expect(screen.getByRole("main")).toContainElement(screen.getByText("isi halaman"));
   });
 });
