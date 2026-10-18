@@ -34,12 +34,14 @@
 
 <form onsubmit={handleSubmit} class="space-y-4">
   <div>
-    <label for="email" class="block text-sm font-medium text-slate-700 mb-1"
+    <label for="login-email-input" class="block text-sm font-medium text-slate-700 mb-1"
       >Email</label
     >
     <input
-      id="email"
+      id="login-email-input"
+      name="email"
       type="email"
+      autocomplete="email"
       value={$email}
       oninput={onEmailChange}
       placeholder="nama@email.com"
@@ -48,12 +50,14 @@
   </div>
 
   <div>
-    <label for="password" class="block text-sm font-medium text-slate-700 mb-1"
+    <label for="login-password-input" class="block text-sm font-medium text-slate-700 mb-1"
       >Kata Sandi</label
     >
     <input
-      id="password"
+      id="login-password-input"
+      name="password"
       type="password"
+      autocomplete="current-password"
       value={$password}
       oninput={onPasswordChange}
       placeholder="••••••••"
@@ -62,6 +66,7 @@
   </div>
 
   <button
+    id="login-submit-button"
     type="submit"
     disabled={$authStore.loading}
     class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"

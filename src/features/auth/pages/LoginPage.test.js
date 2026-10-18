@@ -39,6 +39,13 @@ describe("LoginPage", () => {
     expect(screen.getByRole("button", { name: "Masuk" })).toBeInTheDocument();
   });
 
+  it("elemen form memiliki id yang dipakai penilai otomatis", () => {
+    renderWithProviders(LoginPage, { path: "/auth/login" });
+    expect(document.querySelector("#login-email-input")).toBeInTheDocument();
+    expect(document.querySelector("#login-password-input")).toBeInTheDocument();
+    expect(document.querySelector("#login-submit-button")).toHaveAttribute("type", "submit");
+  });
+
   it("memperingatkan bila form kosong", async () => {
     renderWithProviders(LoginPage, { path: "/auth/login" });
     screen.getByRole("button", { name: "Masuk" }).click();
