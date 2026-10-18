@@ -1,7 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "redirects": [
-    { "source": "/auth", "destination": "/auth/login", "statusCode": 302 }
-  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

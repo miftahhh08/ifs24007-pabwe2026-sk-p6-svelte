@@ -67,14 +67,8 @@ describe("resolveRoute", () => {
     expect(resolveRoute("/profile").access).toBe("auth");
   });
 
-  it("/auth mengalihkan ke /auth/login", () => {
-    const route = resolveRoute("/auth");
-    expect(route.redirect).toBe("/auth/login");
-    expect(route.page).toBeNull();
-  });
-
   it("path lain menampilkan NotFoundPage tanpa layout", () => {
-    for (const path of ["/tidak/ada", "/auth/lain", "/link-trees", "/link-trees/1/2"]) {
+    for (const path of ["/tidak/ada", "/auth", "/auth/lain", "/link-trees", "/link-trees/1/2"]) {
       const route = resolveRoute(path);
       expect(route.page).toBe(NotFoundPage);
       expect(route.layout).toBeNull();

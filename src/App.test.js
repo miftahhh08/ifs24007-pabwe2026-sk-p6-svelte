@@ -64,21 +64,6 @@ describe("App", () => {
     });
   });
 
-  describe("/auth (alamat induk)", () => {
-    it("tamu dialihkan ke halaman login", async () => {
-      renderWithProviders(App, { path: "/auth" });
-      expect(await screen.findByRole("heading", { name: "Masuk" })).toBeInTheDocument();
-      expect(get(currentPath)).toBe("/auth/login");
-      expect(window.location.pathname).toBe("/auth/login");
-    });
-
-    it("pengguna yang sudah login berakhir di beranda", async () => {
-      renderWithProviders(App, { path: "/auth", token: "tok" });
-      expect(await screen.findByRole("heading", { name: "Semua Link Tree" })).toBeInTheDocument();
-      await waitFor(() => expect(get(currentPath)).toBe("/"));
-    });
-  });
-
   describe("sudah login", () => {
     it("membuka / menampilkan daftar link tree dalam layout aplikasi", async () => {
       renderWithProviders(App, { path: "/", token: "tok" });

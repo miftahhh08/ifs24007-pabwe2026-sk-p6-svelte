@@ -25,7 +25,6 @@ window.addEventListener("popstate", () => {
   currentPath.set(window.location.pathname);
 });
 
-// redirect (opsional): bila ada, rute ini langsung mengalihkan ke path tersebut
 // access:
 //   "guest" -> hanya untuk yang BELUM login (halaman login/register)
 //   "auth"  -> hanya untuk yang SUDAH login
@@ -36,8 +35,6 @@ window.addEventListener("popstate", () => {
 // sedangkan file ini mengimpor halaman.
 function getRoutes() {
   return [
-    // /auth saja bukan halaman: arahkan ke halaman login
-    { pattern: "/auth", layout: null, page: null, access: "any", redirect: "/auth/login" },
     { pattern: "/auth/login", layout: AuthLayout, page: LoginPage, access: "guest" },
     { pattern: "/auth/register", layout: AuthLayout, page: RegisterPage, access: "guest" },
     { pattern: "/", layout: LinkTreeLayout, page: HomePage, access: "auth" },
