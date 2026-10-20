@@ -1,30 +1,42 @@
-<script>
-  import { Link2 } from "lucide-svelte";
+<script lang="ts">
+	import type { Snippet } from 'svelte';
+	import { BookOpen, GraduationCap, Video } from 'lucide-svelte';
 
-  let { children } = $props();
+	let { children }: { children: Snippet } = $props();
 </script>
 
-<main
-  class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-sky-50 px-4 py-10"
->
-  <div class="w-full max-w-md">
-    <div class="flex flex-col items-center text-center mb-8">
-      <div
-        class="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200"
-      >
-        <Link2 class="w-7 h-7 text-white" />
-      </div>
-      <h1 class="mt-4 text-2xl font-extrabold text-slate-900">
-        Delcom Link Tree
-      </h1>
-      <p class="mt-2 text-sm text-slate-600">
-        Kumpulkan semua tautan pentingmu dalam satu halaman yang rapi dan mudah
-        dibagikan.
-      </p>
-    </div>
+<div class="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
+	<aside class="hidden flex-col justify-between bg-ink-900 p-12 text-white lg:flex">
+		<div class="flex items-center gap-3">
+			<span class="flex size-11 items-center justify-center rounded-xl bg-gold-500 text-ink-900">
+				<GraduationCap size={26} />
+			</span>
+			<span class="text-xl font-extrabold tracking-tight">Delcom Courses</span>
+		</div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-      {@render children()}
-    </div>
-  </div>
-</main>
+		<div class="max-w-md">
+			<h1 class="text-4xl leading-tight font-extrabold">
+				Kursus video yang bisa kamu ikuti, atau kamu ajarkan.
+			</h1>
+			<p class="mt-5 text-lg leading-relaxed text-ink-200">
+				Pengajar menyusun materi dari video YouTube, pelajar mengikuti kursus, menandai materi yang
+				sudah selesai, lalu memberi rating untuk kursusnya.
+			</p>
+		</div>
+
+		<ul class="space-y-3 text-sm text-ink-200">
+			<li class="flex items-center gap-3"><Video size={18} class="text-gold-400" /> Materi berupa tautan video YouTube</li>
+			<li class="flex items-center gap-3"><BookOpen size={18} class="text-gold-400" /> Progres belajar tercatat per pelajar</li>
+		</ul>
+	</aside>
+
+	<main class="flex items-center justify-center bg-ink-50 p-6 sm:p-12">
+		<div class="w-full max-w-md">
+			<div class="mb-8 flex items-center gap-2 text-ink-900 lg:hidden">
+				<GraduationCap size={24} />
+				<span class="text-lg font-extrabold">Delcom Courses</span>
+			</div>
+			{@render children()}
+		</div>
+	</main>
+</div>

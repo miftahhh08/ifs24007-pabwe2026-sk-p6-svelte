@@ -1,225 +1,130 @@
-<script>
-  import { onMount } from "svelte";
-  import { Camera } from "lucide-svelte";
-  import { useInput } from "../../../hooks/useInput.js";
-  import {
-    usersStore,
-    fetchProfile,
-    updateProfile,
-    updatePhoto,
-    updatePassword,
-  } from "../states/usersStore.js";
-  import {
-    showErrorDialog,
-    showSuccessDialog,
-    showWarningDialog,
-  } from "../../../helpers/toolsHelper.js";
+<script lang="ts">
+	import { Camera, KeyRound, User as UserIcon } from 'lucide-svelte';
+	import { useInput } from '../../../hooks/useInput';
+	import { formatDate, notifyResult, resolveAssetUrl, showErrorDialog } from '../../../helpers/toolsHelper';
+	import { changePassword, changePhoto, changeProfile, usersStore } from '../states/usersStore';
 
-  const { value: name, onChange: onNameChange } = useInput("");
-  const { value: email, onChange: onEmailChange } = useInput("");
-  const {
-    value: currentPassword,
-    onChange: onCurrentChange,
-    reset: resetCurrent,
-  } = useInput("");
-  const {
-    value: newPassword,
-    onChange: onNewChange,
-    reset: resetNew,
-  } = useInput("");
-  const {
-    value: confirmPassword,
-    onChange: onConfirmChange,
-    reset: resetConfirm,
-  } = useInput("");
+	const profile = $derived($usersStore.profile);
 
-  onMount(async () => {
-    try {
-      await fetchProfile();
-      name.set($usersStore.profile.name);
-      email.set($usersStore.profile.email);
-    } catch (error) {
-      await showErrorDialog(error.message);
-    }
-  });
+	const { value: name } = useInput('');
+	const { value: email } = useInput('');
+	const { value: password, reset: resetPassword } = useInput('');
+	const { value: newPassword, reset: resetNewPassword } = useInput('');
+	const { value: confirmation, reset: resetConfirmation } = useInput('');
+	let photo = $state<File | undefined>();
 
-  async function handleProfileSubmit(event) {
-    event.preventDefault();
+	$effect(() => {
+		if (profile) {
+			name.set(profile.name);
+			email.set(profile.email);
+		}
+	});
 
-    if (!$name.trim() || !$email.trim()) {
-      await showWarningDialog("Nama dan email wajib diisi");
-      return;
-    }
+	async function saveProfile(event: SubmitEvent) {
+		event.preventDefault();
+		if (!$name.trim() || !$email.trim()) {
+			await showErrorDialog('Nama dan email wajib diisi');
+			return;
+		}
+		await notifyResult(await changeProfile($name.trim(), $email.trim()));
+	}
 
-    try {
-      await updateProfile({ name: $name.trim(), email: $email.trim() });
-      await showSuccessDialog("Profil berhasil diperbarui");
-    } catch (error) {
-      await showErrorDialog(error.message);
-    }
-  }
+	async function savePhoto(event: SubmitEvent) {
+		event.preventDefault();
+		if (!photo) {
+			await showErrorDialog('Pilih foto terlebih dahulu');
+			return;
+		}
+		await notifyResult(await changePhoto(photo), () => {
+			photo = undefined;
+		});
+	}
 
-  async function handlePhotoChange(event) {
-    const input = event.target;
-    const file = input.files[0];
-    if (!file) return;
-
-    try {
-      await updatePhoto(file);
-      await showSuccessDialog("Foto profil berhasil diperbarui");
-    } catch (error) {
-      await showErrorDialog(error.message);
-    } finally {
-      input.value = "";
-    }
-  }
-
-  async function handlePasswordSubmit(event) {
-    event.preventDefault();
-
-    if (!$currentPassword || !$newPassword || !$confirmPassword) {
-      await showWarningDialog("Semua kolom kata sandi wajib diisi");
-      return;
-    }
-    if ($newPassword !== $confirmPassword) {
-      await showWarningDialog("Konfirmasi kata sandi tidak sama");
-      return;
-    }
-
-    try {
-      await updatePassword({
-        password: $currentPassword,
-        newPassword: $newPassword,
-      });
-      await showSuccessDialog("Kata sandi berhasil diubah");
-      resetCurrent();
-      resetNew();
-      resetConfirm();
-    } catch (error) {
-      await showErrorDialog(error.message);
-    }
-  }
+	async function savePassword(event: SubmitEvent) {
+		event.preventDefault();
+		if (!$password || !$newPassword || !$confirmation) {
+			await showErrorDialog('Semua kolom kata sandi wajib diisi');
+			return;
+		}
+		if ($newPassword !== $confirmation) {
+			await showErrorDialog('Konfirmasi kata sandi baru tidak sama');
+			return;
+		}
+		await notifyResult(await changePassword($password, $newPassword, $confirmation), () => {
+			resetPassword();
+			resetNewPassword();
+			resetConfirmation();
+		});
+	}
 </script>
 
-<div class="space-y-6 max-w-2xl">
-  <div>
-    <h1 class="text-2xl font-extrabold text-slate-900">Profil</h1>
-    <p class="text-sm text-slate-500 mt-1">
-      Kelola data akun, foto, dan kata sandimu.
-    </p>
-  </div>
+<section class="space-y-6">
+	<header>
+		<h1 class="text-2xl font-bold text-ink-900">Profil Saya</h1>
+		<p class="text-sm text-ink-500">Kelola data akun, foto, dan kata sandi.</p>
+	</header>
 
-  {#if $usersStore.profile}
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="flex items-center gap-5 mb-6">
-        {#if $usersStore.profile.photo}
-          <img
-            src={$usersStore.profile.photo}
-            alt="Foto profil"
-            class="w-20 h-20 rounded-full object-cover"
-          />
-        {:else}
-          <div
-            data-testid="avatar-initial"
-            class="w-20 h-20 rounded-full bg-indigo-100 text-indigo-700 text-2xl font-bold flex items-center justify-center"
-          >
-            {$usersStore.profile.name.charAt(0).toUpperCase()}
-          </div>
-        {/if}
+	{#if profile}
+		<div class="card flex items-center gap-5 p-6">
+			<img
+				src={resolveAssetUrl(profile.photo)}
+				alt="Foto profil"
+				class="size-20 rounded-full bg-ink-100 object-cover"
+			/>
+			<div>
+				<p class="text-lg font-bold text-ink-900">{profile.name}</p>
+				<p class="text-sm text-ink-500">{profile.email}</p>
+				<p class="text-xs text-ink-500">Bergabung {formatDate(profile.created_at)}</p>
+			</div>
+		</div>
+	{/if}
 
-        <div>
-          <label
-            for="photo"
-            class="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            <Camera class="w-4 h-4" />
-            Ubah Foto
-          </label>
-          <input
-            id="photo"
-            type="file"
-            accept="image/*"
-            class="sr-only"
-            onchange={handlePhotoChange}
-          />
-          <p class="text-xs text-slate-500 mt-2">JPG atau PNG.</p>
-        </div>
-      </div>
+	<div class="grid gap-6 lg:grid-cols-2">
+		<form class="card space-y-4 p-6" onsubmit={saveProfile} novalidate>
+			<h2 class="flex items-center gap-2 font-bold text-ink-900"><UserIcon size={18} /> Ubah data akun</h2>
+			<div>
+				<label class="label" for="profile-name">Nama</label>
+				<input id="profile-name" type="text" class="input" bind:value={$name} />
+			</div>
+			<div>
+				<label class="label" for="profile-email">Email</label>
+				<input id="profile-email" type="email" class="input" bind:value={$email} />
+			</div>
+			<button type="submit" class="btn btn-primary" disabled={$usersStore.isProfileChange}>Simpan data</button>
+		</form>
 
-      <form onsubmit={handleProfileSubmit} class="space-y-4">
-        <div>
-          <label for="name" class="block text-sm font-medium text-slate-700 mb-1">Nama</label>
-          <input
-            id="name"
-            type="text"
-            value={$name}
-            oninput={onNameChange}
-            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-        <div>
-          <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={$email}
-            oninput={onEmailChange}
-            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={$usersStore.saving}
-          class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-        >
-          Simpan Perubahan
-        </button>
-      </form>
-    </section>
+		<form class="card space-y-4 p-6" onsubmit={savePhoto} novalidate>
+			<h2 class="flex items-center gap-2 font-bold text-ink-900"><Camera size={18} /> Ganti foto</h2>
+			<div>
+				<label class="label" for="profile-photo">Berkas foto</label>
+				<input
+					id="profile-photo"
+					type="file"
+					accept="image/*"
+					class="input"
+					onchange={(event) => (photo = event.currentTarget.files![0])}
+				/>
+			</div>
+			<button type="submit" class="btn btn-primary" disabled={$usersStore.isPhotoChange}>Unggah foto</button>
+		</form>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 class="text-lg font-bold text-slate-900 mb-4">Ubah Kata Sandi</h2>
-      <form onsubmit={handlePasswordSubmit} class="space-y-4">
-        <div>
-          <label for="current-password" class="block text-sm font-medium text-slate-700 mb-1">Kata Sandi Saat Ini</label>
-          <input
-            id="current-password"
-            type="password"
-            value={$currentPassword}
-            oninput={onCurrentChange}
-            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-        <div>
-          <label for="new-password" class="block text-sm font-medium text-slate-700 mb-1">Kata Sandi Baru</label>
-          <input
-            id="new-password"
-            type="password"
-            value={$newPassword}
-            oninput={onNewChange}
-            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-        <div>
-          <label for="confirm-password" class="block text-sm font-medium text-slate-700 mb-1">Konfirmasi Kata Sandi Baru</label>
-          <input
-            id="confirm-password"
-            type="password"
-            value={$confirmPassword}
-            oninput={onConfirmChange}
-            class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={$usersStore.saving}
-          class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
-        >
-          Ubah Kata Sandi
-        </button>
-      </form>
-    </section>
-  {:else}
-    <p class="text-sm text-slate-500">Memuat profil...</p>
-  {/if}
-</div>
+		<form class="card space-y-4 p-6 lg:col-span-2" onsubmit={savePassword} novalidate>
+			<h2 class="flex items-center gap-2 font-bold text-ink-900"><KeyRound size={18} /> Ganti kata sandi</h2>
+			<div class="grid gap-4 sm:grid-cols-3">
+				<div>
+					<label class="label" for="password-old">Kata sandi lama</label>
+					<input id="password-old" type="password" class="input" bind:value={$password} />
+				</div>
+				<div>
+					<label class="label" for="password-new">Kata sandi baru</label>
+					<input id="password-new" type="password" class="input" bind:value={$newPassword} />
+				</div>
+				<div>
+					<label class="label" for="password-confirm">Konfirmasi kata sandi baru</label>
+					<input id="password-confirm" type="password" class="input" bind:value={$confirmation} />
+				</div>
+			</div>
+			<button type="submit" class="btn btn-primary" disabled={$usersStore.isPasswordChange}>Ubah kata sandi</button>
+		</form>
+	</div>
+</section>

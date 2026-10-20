@@ -1,104 +1,54 @@
-<script>
-  import { useInput } from "../../../hooks/useInput.js";
-  import { register, authStore } from "../states/authStore.js";
-  import { navigate } from "../../../router.js";
-  import {
-    showErrorDialog,
-    showSuccessDialog,
-    showWarningDialog,
-  } from "../../../helpers/toolsHelper.js";
+<script lang="ts">
+	import { goto } from '$app/navigation';
+	import { useInput } from '../../../hooks/useInput';
+	import { showErrorDialog, showSuccessDialog } from '../../../helpers/toolsHelper';
+	import { authStore, register } from '../states/authStore';
 
-  const { value: name, onChange: onNameChange } = useInput("");
-  const { value: email, onChange: onEmailChange } = useInput("");
-  const { value: password, onChange: onPasswordChange } = useInput("");
+	const { value: name } = useInput('');
+	const { value: email } = useInput('');
+	const { value: password } = useInput('');
 
-  async function handleSubmit(event) {
-    event.preventDefault();
-
-    if (!$name.trim() || !$email.trim() || !$password) {
-      await showWarningDialog("Nama, email, dan kata sandi wajib diisi");
-      return;
-    }
-
-    try {
-      await register({
-        name: $name.trim(),
-        email: $email.trim(),
-        password: $password,
-      });
-      await showSuccessDialog("Akun berhasil dibuat, silakan masuk");
-      navigate("/auth/login");
-    } catch (error) {
-      await showErrorDialog(error.message);
-    }
-  }
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		if (!$name.trim() || !$email.trim() || !$password) {
+			await showErrorDialog('Nama, email, dan kata sandi wajib diisi');
+			return;
+		}
+		if ($password.length < 6) {
+			await showErrorDialog('Kata sandi minimal 6 karakter');
+			return;
+		}
+		if (await register($name.trim(), $email.trim(), $password)) {
+			await showSuccessDialog($authStore.message);
+			await goto('/auth/login');
+		} else {
+			await showErrorDialog($authStore.message);
+		}
+	}
 </script>
 
-<h2 class="text-xl font-bold text-slate-900">Daftar</h2>
-<p class="text-sm text-slate-500 mt-1 mb-6">
-  Buat akun baru untuk mulai membuat link tree.
-</p>
+<section>
+	<h2 class="text-3xl font-extrabold text-ink-900">Daftar</h2>
+	<p class="mt-2 text-sm text-ink-500">Buat akun untuk mengikuti atau membuat kursus.</p>
 
-<form onsubmit={handleSubmit} class="space-y-4">
-  <div>
-    <label for="name" class="block text-sm font-medium text-slate-700 mb-1"
-      >Nama</label
-    >
-    <input
-      id="name"
-      type="text"
-      value={$name}
-      oninput={onNameChange}
-      placeholder="Nama lengkap"
-      class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    />
-  </div>
+	<form class="mt-8 space-y-5" onsubmit={handleSubmit} novalidate>
+		<div>
+			<label class="label" for="register-name">Nama</label>
+			<input id="register-name" type="text" class="input" placeholder="Nama lengkap" bind:value={$name} />
+		</div>
+		<div>
+			<label class="label" for="register-email">Email</label>
+			<input id="register-email" type="email" class="input" placeholder="nama@delcom.org" bind:value={$email} />
+		</div>
+		<div>
+			<label class="label" for="register-password">Kata sandi</label>
+			<input id="register-password" type="password" class="input" placeholder="Minimal 6 karakter" bind:value={$password} />
+		</div>
+		<button type="submit" class="btn btn-primary w-full" disabled={$authStore.isAuthLoading}>Daftar</button>
+	</form>
 
-  <div>
-    <label for="email" class="block text-sm font-medium text-slate-700 mb-1"
-      >Email</label
-    >
-    <input
-      id="email"
-      type="email"
-      value={$email}
-      oninput={onEmailChange}
-      placeholder="nama@email.com"
-      class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    />
-  </div>
-
-  <div>
-    <label for="password" class="block text-sm font-medium text-slate-700 mb-1"
-      >Kata Sandi</label
-    >
-    <input
-      id="password"
-      type="password"
-      value={$password}
-      oninput={onPasswordChange}
-      placeholder="Minimal 6 karakter"
-      class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    />
-  </div>
-
-  <button
-    type="submit"
-    disabled={$authStore.loading}
-    class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-  >
-    {$authStore.loading ? "Memproses..." : "Daftar"}
-  </button>
-</form>
-
-<p class="mt-6 text-center text-sm text-slate-500">
-  Sudah punya akun?
-  <a
-    href="/auth/login"
-    onclick={(e) => {
-      e.preventDefault();
-      navigate("/auth/login");
-    }}
-    class="font-semibold text-indigo-600 underline">Masuk</a
-  >
-</p>
+	<p class="mt-6 text-center text-sm text-ink-500">
+		Sudah punya akun?
+		<a href="/auth/login" class="font-semibold text-ink-700 underline">Masuk</a>
+	</p>
+</section>
