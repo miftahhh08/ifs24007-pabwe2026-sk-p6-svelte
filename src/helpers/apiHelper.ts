@@ -1,81 +1,85 @@
-export interface ApiResponse<T = unknown> {
-	status?: 'success' | 'fail' | 'error';
-	message: string;
-	data?: T;
-}
-
-export type QueryParams = Record<string, string | number | boolean | null | undefined>;
-
-export interface RequestOptions {
-	method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-	body?: unknown;
-	formData?: FormData;
-	query?: QueryParams;
-	auth?: boolean;
-}
-
-const TOKEN_KEY = 'delcom_courses_token';
-
-export const getBaseUrl = (): string => import.meta.env.VITE_DELCOM_BASEURL;
-
-export const getAccessToken = (): string | null => localStorage.getItem(TOKEN_KEY);
-
-export const putAccessToken = (token: string | null): void => {
-	if (token) {
-		localStorage.setItem(TOKEN_KEY, token);
-	} else {
-		localStorage.removeItem(TOKEN_KEY);
-	}
+﻿export type ApiResponse<T = any> = {
+  status: 'success' | 'fail' | 'error' | string;
+  message: string;
+  data?: T;
 };
 
+type QueryParams = Record<string, unknown>;
+
+type RequestOptions = {
+  method?: string;
+  query?: QueryParams;
+  body?: unknown;
+  formData?: FormData;
+  auth?: boolean;
+};
+
+const TOKEN_KEY = 'access_token';
+
+export function getBaseUrl(): string {
+  return import.meta.env.VITE_DELCOM_BASEURL;
+}
+
+export function getAccessToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function putAccessToken(token: string | null): void {
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+}
+
 export function buildUrl(path: string, query?: QueryParams): string {
-	const params = new URLSearchParams();
-	for (const [key, value] of Object.entries(query ?? {})) {
-		if (value === undefined || value === null || value === '') continue;
-		params.append(key, String(value));
-	}
-	const queryString = params.toString();
-	return `${getBaseUrl()}${path}${queryString ? `?${queryString}` : ''}`;
+  const params = new URLSearchParams();
+  Object.entries(query ?? {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.append(key, String(value));
+    }
+  });
+  const qs = params.toString();
+  return `${getBaseUrl()}${path}${qs ? `?${qs}` : ''}`;
 }
 
-export async function apiRequest<T = unknown>(
-	path: string,
-	options: RequestOptions = {}
+export async function apiRequest<T = any>(
+  path: string,
+  { method = 'GET', query, body, formData, auth = true }: RequestOptions = {}
 ): Promise<ApiResponse<T>> {
-	const { method = 'GET', body, formData, query, auth = true } = options;
-	const headers: Record<string, string> = { Accept: 'application/json' };
-	const token = getAccessToken();
-	if (auth && token) headers.Authorization = `Bearer ${token}`;
+  const headers: Record<string, string> = { Accept: 'application/json' };
 
-	let payload: BodyInit | undefined;
-	if (formData) {
-		payload = formData;
-	} else if (body !== undefined) {
-		headers['Content-Type'] = 'application/json';
-		payload = JSON.stringify(body);
-	}
+  const token = getAccessToken();
+  if (auth && token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
-	try {
-		const response = await fetch(buildUrl(path, query), { method, headers, body: payload });
-		return (await response.json()) as ApiResponse<T>;
-	} catch {
-		return {
-			status: 'error',
-			message: 'Tidak dapat terhubung ke server. Periksa koneksi internet kamu.'
-		};
-	}
+  const init: RequestInit & { headers: Record<string, string> } = { method, headers };
+
+  if (formData) {
+    init.body = formData;
+  } else if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    init.body = JSON.stringify(body);
+  }
+
+  try {
+    const response = await fetch(buildUrl(path, query), init);
+    return (await response.json()) as ApiResponse<T>;
+  } catch {
+    return { status: 'error', message: 'Tidak dapat terhubung ke server' };
+  }
 }
 
-export const isSuccess = (response: ApiResponse<unknown>): boolean =>
-	response.status === 'success';
+export function isSuccess(response: { status: string }): boolean {
+  return response.status === 'success';
+}
 
-/** Gabungkan pesan validasi (`data.<field>[]`) bila ada, jika tidak pakai `message`. */
-export function getErrorMessage(response: ApiResponse<unknown>): string {
-	const details =
-		response.data && typeof response.data === 'object'
-			? Object.values(response.data as Record<string, unknown>)
-					.flat()
-					.filter((item): item is string => typeof item === 'string')
-			: [];
-	return details.length > 0 ? details.join('\n') : response.message;
+export function getErrorMessage(response: ApiResponse): string {
+  const data = response.data as Record<string, string[] | string> | undefined;
+  const messages =
+    data && typeof data === 'object'
+      ? Object.values(data).flat().filter(Boolean)
+      : [];
+  return messages.length ? messages.join('\n') : response.message;
 }
