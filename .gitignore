@@ -4,3 +4,9 @@ node_modules
 /coverage
 .env.local
 .DS_Store
+
+node_modules/
+.vitest-cache/
+coverage/
+.svelte-kit/
+build/
